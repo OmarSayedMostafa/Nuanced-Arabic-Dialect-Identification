@@ -92,13 +92,15 @@ def clean_arabic_tweet(tweet_text):
     unique_chars = []
     p_tashkeel = re.compile(r'[\u0617-\u061A\u064B-\u0652]')
     
-    english_chars = re.compile("[a-zA-Z0-9?،؟><©®™;:,)({}[\]/\\\.\-_+=!@#$%\^&*|']")
-    tweet_text = re.sub(english_chars,"", tweet_text)
-
     tweet_text = tweet_text.replace('،', '')
     tweet_text = tweet_text.replace('"', '')
     tweet_text = tweet_text.replace('-', ' ')
     tweet_text = tweet_text.replace('—', ' ')
+    tweet_text = tweet_text.replace('_', ' ')
+    tweet_text = tweet_text.replace('+', ' ')
+
+    english_chars = re.compile("[a-zA-Z0-9?،؟><©®™;:,)({}[\]/\\\.\-_+=!@#$%\^&*|']")
+    tweet_text = re.sub(english_chars,"", tweet_text)
 
     tweet_text = re.sub(p_tashkeel,"", tweet_text)
     tweet_text = remove_punctuations(tweet_text)
