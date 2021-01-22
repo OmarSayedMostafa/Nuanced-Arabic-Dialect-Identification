@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import re
 import random
 import string
+from collections import OrderedDict
+import numpy as np
 
 
 
@@ -158,6 +160,35 @@ def clean_arabic_tweet(tweet_text):
     return final_tweet.strip()
 
 
+
+#remove rare words.
+#unique_count = 3
+def remove_rare_words(df_column_name, unique_count):
+    all_ = [x for y in df_column_name for x in y.split(' ') ]
+    a,b = np.unique(all_, return_counts = True)
+    to_remove = a[b<unique_count]
+    print("words removed: ", len(to_remove))
+    return [' '.join(np.array(y.split(' '))[~np.isin(y.split(' '), to_remove)]) for y in df_column_name]
+    
+
+#remove duplicate keywords from tweets.
+def remove_duplicate_words(df_column_name):
+    df_column_name = (df_column_name.str.split()
+                              .apply(lambda x: OrderedDict.fromkeys(x).keys())
+                              .str.join(' '))
+    return df_column_name
+
+
+
+#common_perecentage = 0.95
+def remove_common_words(df_column_name, common_perecentage): 
+    words_count = len([x for y in df_column_name for x in y.split(' ') ])
+    print("words_count", words_count)
+    minimum_words = words_count * common_perecentage
+    print("minimum_words", minimum_words)
+    df = pd.Series(df_column_name)
+    return df.groupby((df.shift() != df).cumsum())\
+                                 .filter(lambda x: len(x) < int(minimum_words))
 
 
 
