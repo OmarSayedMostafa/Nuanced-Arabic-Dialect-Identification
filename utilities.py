@@ -127,7 +127,7 @@ def clean_arabic_tweet(tweet_text):
     english_chars = re.compile("[a-zA-Z0-9?،؟><©®™;:,)({}[\]/\\\.\-_+=!@#$%\^&*|']")
     tweet_text = re.sub(english_chars,"", tweet_text)
 
-    # step 3 remove diacritics
+    # step 3 remove     
     tweet_text = re.sub(p_tashkeel,"", tweet_text)
     tweet_text = remove_diacritics(tweet_text)
     
