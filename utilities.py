@@ -161,6 +161,23 @@ def clean_arabic_tweet(tweet_text):
 
 
 
+def clean_arabic_tweetV0(tweet_text):
+    tweet_text = tweet_text.replace('،', '')
+    tweet_text = tweet_text.replace('"', '')
+    tweet_text = tweet_text.replace('-', ' ')
+    tweet_text = tweet_text.replace('—', ' ')
+    tweet_text = tweet_text.replace('_', ' ')
+    tweet_text = tweet_text.replace('+', ' ')
+    tweet_text = tweet_text.replace('#', '')
+    tweet_text = remove_punctuations(tweet_text)
+
+    # step 2 remove english chars
+    english_chars = re.compile("[a-zA-Z0-9?،؟><©®™;:,)({}[\]/\\\.\-_+=!@#$%\^&*|']")
+    tweet_text = re.sub(english_chars,"", tweet_text)
+
+    return tweet_text
+
+
 #remove rare words.
 #unique_count = 3
 def remove_rare_words(df_column_name, unique_count):
