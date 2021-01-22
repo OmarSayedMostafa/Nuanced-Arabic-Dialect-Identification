@@ -44,6 +44,7 @@ arabic_chars = re.compile('[\u0627-\u064a]')
 
  ####---------------------------------------------------------------------------------------###
 
+
 def normalize_arabic(text):
     text = re.sub("[ٲإٳأﺍﺁﭑﺈﺄﺃآا]", "ا", text)
     text = re.sub("_", " ", text)
@@ -92,8 +93,19 @@ def remove_punctuations(text):
 def remove_repeating_char(text):
     return re.sub(r'(.)\1+', r'\1', text)
 
+    # step 1 remove punctuations
+    # step 2 remove english chars
+    # step 3 remove diacritics
+    # step 4 normalize arabic
+    # step 5 some of chars unicode still leaks into the text, filter the text char by char
+    # step 6  removing words which contains single char 
 
-
+def remove_single_char_word(text):
+    filterd_text = ''
+    for word in text.split():
+        if len(word) > 1:
+            filterd_text+=' '+word
+    return filterd_text
 
 def clean_arabic_tweet(tweet_text):
 
@@ -140,11 +152,7 @@ def clean_arabic_tweet(tweet_text):
     new_tweet_text.strip()
 
     # step 6  removing words which contains single char 
-    final_tweet = ''
-    for word in new_tweet_text.split():
-        if len(word) > 1:
-            final_tweet+=' '+word
-
+    final_tweet = remove_single_char_word(new_tweet_text)
 
 
     return final_tweet.strip()
