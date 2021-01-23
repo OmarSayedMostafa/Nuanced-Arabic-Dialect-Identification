@@ -207,6 +207,12 @@ def remove_common_words(df_column_name, common_perecentage):
     return df.groupby((df.shift() != df).cumsum())\
                                  .filter(lambda x: len(x) < int(minimum_words))
 
+#remove empty tweets.
+def remove_empty_tweets(df, column_name):
+    nan_value = float("NaN")
+    df.replace("", nan_value, inplace=True)
+    df.dropna(subset = [column_name], inplace=True)
+    return df
 
 
 
