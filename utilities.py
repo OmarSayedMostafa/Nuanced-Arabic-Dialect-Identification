@@ -10,6 +10,8 @@ from farasa.segmenter import FarasaSegmenter
 
 
 ## ------------------- STATICS ---------------------------------------------- ##
+#remove arabic formal clitics from tweets.
+
 search = ["أ","إ","آ","ة","_","-","/",".","،"," و"," يا ",'"',"ـ","'","ى","\\",'\n', '\t','&quot;','?','؟','!',
 "—", '‘']
 
@@ -46,6 +48,10 @@ arabic_digits = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩']
 arabic_chars = re.compile('[\u0627-\u064a]')
 
  ####---------------------------------------------------------------------------------------###
+
+def get_tweet_lengths(text):
+    return len(text.split(" "))
+
 
 
 def normalize_arabic(text):
@@ -223,3 +229,41 @@ def farasa_segmenting(text):
     text_segmented = text_segmented.split('+')
 
     return ' '.join(text_segmented)
+
+
+
+
+#### loading stopwords
+stop_words_list_preprocessed = []
+def loading_stopwords_from_file(file_name='formal clitics stop words.txt'):
+    global stop_words_list_preprocessed
+    with open(file_name,'r',encoding="utf8") as stop_words_file:
+        stop_words_list = [line.strip() for line in stop_words_file]
+
+    #### normalize the stop words
+    for word in stop_words_list:
+        word_processed = remove_diacritics(word)
+        word_processed = normalize_arabic(word_processed)
+        word_processed = remove_repeating_char(word_processed)
+        word_processed = remove_diacritics(word_processed)
+        word_processed = remove_diacritics(word_processed)
+        # print(word, word_processed)
+        if len(word_processed)>1:
+            stop_words_list_preprocessed.append(word_processed)
+
+    return stop_words_list_preprocessed
+    
+    
+
+removed_stop_words = []
+def remove_stopwords(text):
+    global stop_words_list_preprocessed
+    global removed_stop_words
+
+    text_tokens = text.strip().split(" ")
+    for word in text_tokens:
+        if word in stop_words_list_preprocessed:
+            removed_stop_words.append(word)            
+    #------------------------------------------------------------------------------------------------
+    tokens_filtered= [word for word in text_tokens if not word in stop_words_list_preprocessed]
+    return (" ").join(tokens_filtered)
