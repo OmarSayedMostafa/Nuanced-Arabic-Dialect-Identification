@@ -5,10 +5,13 @@ import random
 import string
 from collections import OrderedDict
 import numpy as np
+from farasa.segmenter import FarasaSegmenter 
 
 
 
 ## ------------------- STATICS ---------------------------------------------- ##
+#remove arabic formal clitics from tweets.
+
 search = ["أ","إ","آ","ة","_","-","/",".","،"," و"," يا ",'"',"ـ","'","ى","\\",'\n', '\t','&quot;','?','؟','!',
 "—", '‘']
 
@@ -45,6 +48,10 @@ arabic_digits = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩']
 arabic_chars = re.compile('[\u0627-\u064a]')
 
  ####---------------------------------------------------------------------------------------###
+
+def get_tweet_lengths(text):
+    return len(text.split(" "))
+
 
 
 def normalize_arabic(text):
@@ -216,85 +223,47 @@ def remove_empty_tweets(df, column_name):
 
 
 
+segmenter = FarasaSegmenter(interactive=True)
+def farasa_segmenting(text):
+    text_segmented = segmenter.segment(text)
+    text_segmented = text_segmented.split('+')
 
-# def clean_arabic_tweet(tweet_text):
-#     global arabic_digits
-#     global special_chars
-#     global arabic_chars
-#     global arabic_replace
-#     global arabic
-#     global punctuations_list
-#     global arabic_diacritics
-#     global search
-#     global replace
+    return ' '.join(text_segmented)
 
-#     unique_chars = []
-#     p_tashkeel = re.compile(r'[\u0617-\u061A\u064B-\u0652]')
+
+
+
+#### loading stopwords
+stop_words_list_preprocessed = []
+def loading_stopwords_from_file(file_name='formal clitics stop words.txt'):
+    global stop_words_list_preprocessed
+    with open(file_name,'r',encoding="utf8") as stop_words_file:
+        stop_words_list = [line.strip() for line in stop_words_file]
+
+    #### normalize the stop words
+    for word in stop_words_list:
+        word_processed = remove_diacritics(word)
+        word_processed = normalize_arabic(word_processed)
+        word_processed = remove_repeating_char(word_processed)
+        word_processed = remove_diacritics(word_processed)
+        word_processed = remove_diacritics(word_processed)
+        # print(word, word_processed)
+        if len(word_processed)>1:
+            stop_words_list_preprocessed.append(word_processed)
+
+    return stop_words_list_preprocessed
     
-#     tweet_text = tweet_text.replace('،', '')
-#     tweet_text = tweet_text.replace('"', '')
-#     tweet_text = tweet_text.replace('-', ' ')
-#     tweet_text = tweet_text.replace('—', ' ')
-#     tweet_text = tweet_text.replace('_', ' ')
-#     tweet_text = tweet_text.replace('+', ' ')
-
-#     english_chars = re.compile("[a-zA-Z0-9?،؟><©®™;:,)({}[\]/\\\.\-_+=!@#$%\^&*|']")
-#     tweet_text = re.sub(english_chars,"", tweet_text)
-
-#     tweet_text = re.sub(p_tashkeel,"", tweet_text)
-#     tweet_text = remove_punctuations(tweet_text)
-#     tweet_text = remove_diacritics(tweet_text)
-#     tweet_text = normalize_arabic(tweet_text)
-#     tweet_text = remove_repeating_char(tweet_text)
     
-#     #remove longation
-#     p_longation = re.compile(r'(.)\1+')
-#     subst = r"\1\1"
-#     tweet_text = re.sub(p_longation, subst, tweet_text)
-    
-#     tweet_text = tweet_text.replace('وو', 'و')
-#     tweet_text = tweet_text.replace('يي', 'ي')
-#     tweet_text = tweet_text.replace('اا', 'ا')
-    
-#     for i in range(0, len(search)):
-#         tweet_text = tweet_text.replace(search[i], replace[i])
-    
-#     tweet_text = re.sub(r'[^\u0600-\u06ff\u0750-\u077f\ufb50-\ufbc1\ufbd3-\ufd3f\ufd50-\ufd8f\ufd50-\ufd8f\ufe70-\ufefc\uFDF0-\uFDFD]+', ' ', tweet_text)
-    
-#     arabic_characters = arabic_chars.findall(tweet_text)#+arabic_replace+arabic_digits+arabic
 
-#     all_arabic = arabic_characters+arabic_replace+special_chars
-    
-#     new_tweet_text = ''
-#     for i, char in enumerate(tweet_text):
-#         if char in arabic_digits:
-#             pass
-#         elif char not in all_arabic and char not in unique_chars:
-#             unique_chars.append(char)
-#             pass
-#         else:
-#             new_tweet_text+=char
-            
+removed_stop_words = []
+def remove_stopwords(text):
+    global stop_words_list_preprocessed
+    global removed_stop_words
 
-#     new_tweet_text.strip()
-
-#     return new_tweet_text
-
-
-
-# def clean_arabic_tweet(tweet_text):
-#   tweet_text = normalize_arabic(tweet_text)
-#   p_tashkeel = re.compile(r'[\u0617-\u061A\u064B-\u0652]')
-#   english_chars = re.compile("[a-zA-Z0-9?،؟><©®™;:,)({}[\]/\\\.\-_+=!@#$%\^&*|']")
-#   tweet_text = re.sub(english_chars,"", tweet_text)
-#   tweet_text = re.sub(p_tashkeel,"", tweet_text)
-#   tweet_text = remove_punctuations(tweet_text)
-#   tweet_text = remove_diacritics(tweet_text)
-#   tweet_text = remove_repeating_char(tweet_text)
-
-#   tweet_text = re.sub(r'[^\u0600-\u06ff\u0750-\u077f\ufb50-\ufbc1\ufbd3-\ufd3f\ufd50-\ufd8f\ufd50-\ufd8f\ufe70-\ufefc\uFDF0-\uFDFD]+', ' ', tweet_text)
-
-          
-#   tweet_text.strip()
-
-#   return tweet_text
+    text_tokens = text.strip().split(" ")
+    for word in text_tokens:
+        if word in stop_words_list_preprocessed:
+            removed_stop_words.append(word)            
+    #------------------------------------------------------------------------------------------------
+    tokens_filtered= [word for word in text_tokens if not word in stop_words_list_preprocessed]
+    return (" ").join(tokens_filtered)
